@@ -1,0 +1,32 @@
+---
+import { setRequestCookie } from "../lib/useUser";
+
+// Astro.cookies.set("user", { username: "Vasily" });
+
+let tmp = null;
+
+if (Astro.request.method == "POST") {
+    tmp = await Astro.request.formData()
+    const username = tmp.get("username")
+
+    const promise = await fetch(`https://api.github.com/users/${username}`)
+    const {login, avatar_url} = (await promise.json()) // as {login: string, avatar_url: string}
+    console.log({login, avatar_url})
+
+    await setRequestCookie(Astro.cookies, {login, avatar_url})
+
+    console.log(JSON.stringify(tmp && Object.fromEntries(tmp)))
+}
+---
+
+<form hx-post="/login">
+    <!-- <form method="POST"> -->
+    <input value="obask" name="username" />
+    <button>Click</button>
+</form>
+
+{
+    Astro.request.method == "POST" && (
+        <p>Received: {JSON.stringify(tmp && Object.fromEntries(tmp))}</p>
+    )
+}

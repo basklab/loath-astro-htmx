@@ -1,0 +1,53 @@
+---
+import HeaderLink from './HeaderLink.astro';
+import { SITE_TITLE } from '../config';
+import { getRequestCookie } from '../lib/useUser';
+
+// Use Astro.glob() to fetch all posts, and then sort them by date.
+const posts = (await Astro.glob('../pages/blog/*.{md,mdx}')).sort(
+	(a, b) => new Date(b.frontmatter.pubDate).valueOf() - new Date(a.frontmatter.pubDate).valueOf()
+)
+
+const userInfo = await getRequestCookie(Astro.cookies)
+
+---
+
+<header>
+	<h2>
+		{SITE_TITLE}
+	</h2>
+	<nav>
+		<HeaderLink href="/">Home</HeaderLink>
+		<HeaderLink href="/blog">Blog</HeaderLink>
+		<HeaderLink href="/about">About</HeaderLink>
+		<button hx-get="/partial" hx-target="#mytarget">Partial</button>
+		<button hx-get="/login" hx-target="#mytarget">Login</button>
+	</nav>
+
+	<ul>
+		{
+			posts.map((post) => (
+				<li>
+					<time datetime={post.frontmatter.pubDate}>
+						{new Date(post.frontmatter.pubDate).toLocaleDateString('en-us', {
+							year: 'numeric',
+							month: 'short',
+							day: 'numeric',
+						})}
+					</time>
+					<a href={post.url}>{post.frontmatter.title}</a>
+				</li>
+			))
+		}
+	</ul>
+	User: {userInfo?.login}
+
+</header>
+<style>
+	header {
+		margin: 0em 0 2em;
+	}
+	h2 {
+		margin: 0.5em 0;
+	}
+</style>
